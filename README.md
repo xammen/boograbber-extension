@@ -1,0 +1,201 @@
+<p align="center">
+<pre>
+███████████                      █████████                      █████     █████                       
+▒▒███▒▒▒▒▒███                    ███▒▒▒▒▒███                    ▒▒███     ▒▒███                        
+ ▒███    ▒███  ██████   ██████  ███     ▒▒▒  ████████   ██████   ▒███████  ▒███████   ██████  ████████ 
+ ▒██████████  ███▒▒███ ███▒▒███▒███         ▒▒███▒▒███ ▒▒▒▒▒███  ▒███▒▒███ ▒███▒▒███ ███▒▒███▒▒███▒▒███
+ ▒███▒▒▒▒▒███▒███ ▒███▒███ ▒███▒███    █████ ▒███ ▒▒▒   ███████  ▒███ ▒███ ▒███ ▒███▒███████  ▒███ ▒▒▒ 
+ ▒███    ▒███▒███ ▒███▒███ ▒███▒▒███  ▒▒███  ▒███      ███▒▒███  ▒███ ▒███ ▒███ ▒███▒███▒▒▒   ▒███     
+ ███████████ ▒▒██████ ▒▒██████  ▒▒█████████  █████    ▒▒████████ ████████  ████████ ▒▒██████  █████    
+▒▒▒▒▒▒▒▒▒▒▒   ▒▒▒▒▒▒   ▒▒▒▒▒▒    ▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒      ▒▒▒▒▒▒▒▒ ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒▒   ▒▒▒▒▒▒  ▒▒▒▒▒     
+                                  extension
+</pre>
+</p>
+
+<p align="center">
+  <a href="#">
+    <img src="https://img.shields.io/badge/version-1.6.0-ghost?labelColor=0a0a0a&color=4a9&style=for-the-badge" alt="Version"/>
+  </a>
+  <a href="https://github.com/xammen/gif">
+    <img src="https://img.shields.io/badge/website-hiii.boo/gif-ghost?labelColor=0a0a0a&color=888&style=for-the-badge" alt="Website"/>
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/badge/manifest-v3-ghost?labelColor=0a0a0a&color=666&style=for-the-badge&logo=googlechrome&logoColor=888" alt="Manifest V3"/>
+  </a>
+</p>
+
+<p align="center">
+  <i>chrome extension to download twitter/x gifs with one click</i>
+  <br/>
+  <i>because right-click > save doesn't work on "gifs" that are actually mp4s</i>
+</p>
+
+---
+
+## ✨ what does it do?
+
+adds a `gif` button to every tweet containing a video/gif.
+
+```
+  ╭──────────────────────────────────────────╮
+  │                                          │
+  │   some tweet with a funny gif            │
+  │                                          │
+  │   ┌────────────────────────────────┐     │
+  │   │                                │     │
+  │   │         [video/gif]            │     │
+  │   │                                │     │
+  │   └────────────────────────────────┘     │
+  │                                          │
+  │   💬  🔁  ❤️  📊  [gif] ← click this     │
+  │                                          │
+  ╰──────────────────────────────────────────╯
+```
+
+---
+
+## 🔮 features
+
+| feature | |
+|---------|---|
+| one-click gif download | ✓ |
+| copy mp4 link | ✓ |
+| copy gif link (auto-uploads to imgbb) | ✓ |
+| works on twitter.com & x.com | ✓ |
+| configurable quality/fps/size | ✓ |
+| download history | ✓ |
+| dark minimal ui | ✓ |
+
+---
+
+## 📦 installation
+
+```
+  ┌────────────────────────────────────────────────────┐
+  │                                                    │
+  │   1. clone this repo                               │
+  │      git clone https://github.com/xammen/          │
+  │                 boograbber-extension               │
+  │                                                    │
+  │   2. go to chrome://extensions                     │
+  │                                                    │
+  │   3. enable "developer mode" (top right)           │
+  │                                                    │
+  │   4. click "load unpacked"                         │
+  │                                                    │
+  │   5. select the cloned folder                      │
+  │                                                    │
+  │   6. pin the extension for easy access             │
+  │                                                    │
+  ╰────────────────────────────────────────────────────╯
+```
+
+---
+
+## 🖱️ usage
+
+### download a gif
+
+1. find a tweet with a gif/video
+2. click the `gif` button in the tweet actions
+3. select from dropdown:
+
+```
+  ╭─────────────────╮
+  │   ↓ download gif │  ← saves .gif to downloads
+  ├─────────────────┤
+  │   ⎘ copy link  › │──► mp4  ← direct video url
+  ╰─────────────────╯    gif  ← uploads & copies link
+```
+
+### settings
+
+click the extension icon to configure:
+
+| setting | default | range |
+|---------|---------|-------|
+| quality | 10 | 1-20 (higher = better) |
+| max width | 480px | 100-1000 |
+| fps | 10 | 5-30 |
+
+---
+
+## 📁 structure
+
+```
+boograbber-extension/
+├── manifest.json          # v3 manifest
+├── background/
+│   └── service-worker.js  # handles conversion & downloads
+├── content/
+│   ├── content.js         # injects gif button into tweets
+│   └── content.css        # button styles
+├── popup/
+│   ├── popup.html         # settings ui
+│   ├── popup.js           # settings logic
+│   └── popup.css          # popup styles
+├── lib/
+│   ├── gif.js             # gif.js library
+│   ├── gif.worker.js      # gif.js web worker
+│   ├── offscreen.html     # offscreen document
+│   └── offscreen.js       # canvas/conversion logic
+└── icons/                 # extension icons
+```
+
+---
+
+## 🔒 privacy
+
+```
+  ┌─────────────────────────────────────────────────────┐
+  │                                                     │
+  │   ✓  conversion happens locally in your browser    │
+  │   ✓  no account required                           │
+  │   ✓  no tracking                                   │
+  │                                                     │
+  │   ☁️  "copy gif link" uploads to i.ibb.co          │
+  │                                                     │
+  └─────────────────────────────────────────────────────┘
+```
+
+| data | stored where |
+|------|--------------|
+| settings | chrome.storage.local (your browser) |
+| history | chrome.storage.local (your browser) |
+| uploaded gifs | i.ibb.co (if you use "copy gif link") |
+
+---
+
+## 🛠️ tech
+
+| | |
+|---|---|
+| manifest | v3 |
+| gif encoding | gif.js |
+| image hosting | imgbb |
+| video proxy | hiii.boo/api |
+
+---
+
+## 🔗 related
+
+- [hiii.boo/gif](https://hiii.boo/gif) - web version (no extension needed)
+- [xammen/gif](https://github.com/xammen/gif) - website source code
+
+---
+
+## 📜 license
+
+do whatever you want with it.
+
+---
+
+<p align="center">
+  <br/>
+  <code>༼ つ ╹ ╹ ༽つ</code>
+  <br/>
+  <br/>
+  <i>made with boredom</i>
+  <br/>
+  <br/>
+</p>
