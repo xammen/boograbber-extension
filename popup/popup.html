@@ -15,6 +15,7 @@
     
     <nav class="tabs">
       <button class="tab active" data-tab="history">History</button>
+      <button class="tab" data-tab="downloads">Downloads</button>
       <button class="tab" data-tab="settings">Settings</button>
     </nav>
     
@@ -37,6 +38,20 @@
         </div>
         <button id="clear-history" class="btn-secondary" style="display: none;">
           Clear History
+        </button>
+      </section>
+      
+      <!-- Downloads Tab -->
+      <section id="downloads" class="tab-content">
+        <div id="downloads-list" class="downloads-list">
+          <div class="empty-state">
+            <span class="empty-icon">MP4</span>
+            <p>No downloads yet</p>
+            <p class="hint">Downloaded files appear here</p>
+          </div>
+        </div>
+        <button id="clear-downloads" class="btn-secondary" style="display: none;">
+          Clear Downloads
         </button>
       </section>
       
@@ -96,6 +111,22 @@
             <span class="setting-label">Auto-play GIFs in history</span>
           </label>
           <span class="setting-hint">(may consume RAM ༼ つ ╹ ╹ ༽つ)</span>
+        </div>
+        
+        <div class="setting-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoUploadOnDownload">
+            <span class="setting-label">Auto-upload on download</span>
+          </label>
+          <span class="setting-hint">uploads GIF to get shareable link</span>
+        </div>
+        
+        <div class="setting-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeMp4">
+            <span class="setting-label">Include MP4 in history</span>
+          </label>
+          <span class="setting-hint">track MP4 downloads & copies</span>
         </div>
         
         <button id="save-settings" class="btn-primary">Save Settings</button>

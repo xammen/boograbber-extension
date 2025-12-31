@@ -532,6 +532,75 @@ footer a:hover {
   color: var(--primary);
 }
 
+/* Downloads List - More compact/discrete */
+.downloads-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.download-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  transition: all 0.2s ease;
+}
+
+.download-item:hover {
+  border-color: var(--body);
+}
+
+.download-icon {
+  padding: 4px 6px;
+  background: var(--border);
+  border-radius: 3px;
+  font-size: 9px;
+  color: var(--secondary);
+  font-weight: 500;
+  min-width: 28px;
+  text-align: center;
+}
+
+.download-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.download-name {
+  font-size: 11px;
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.download-meta {
+  font-size: 10px;
+  color: var(--secondary);
+  margin-top: 2px;
+}
+
+.download-tweet-btn {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--body);
+  font-size: 10px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.download-tweet-btn:hover {
+  color: var(--primary);
+  border-color: var(--body);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

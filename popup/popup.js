@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initTabs();
   loadHistory();
+  loadDownloads();
   loadSettings();
   initEventListeners();
 });
@@ -29,7 +30,9 @@ let showPinned = true;
 
 async function loadHistory() {
   const response = await chrome.runtime.sendMessage({ type: 'GET_HISTORY' });
-  const history = response || [];
+  const allHistory = response || [];
+  // Filter for copied items only (with URL/shareable link)
+  const history = allHistory.filter(item => item.type === 'copied' && item.url);
   const settingsResponse = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
   const settings = settingsResponse || {};
   const autoPlayGifs = settings.autoPlayGifs === true;
@@ -43,8 +46,8 @@ async function loadHistory() {
     historyList.innerHTML = `
       <div class="empty-state">
         <span class="empty-icon">GIF</span>
-        <p>No downloads yet</p>
-        <p class="hint">Click the GIF button on any tweet to start</p>
+        <p>No copied links yet</p>
+        <p class="hint">Use "copy link" to get shareable URLs</p>
       </div>
     `;
     clearBtn.style.display = 'none';
@@ -203,6 +206,47 @@ async function loadHistory() {
   });
 }
 
+async function loadDownloads() {
+  const response = await chrome.runtime.sendMessage({ type: 'GET_HISTORY' });
+  const allHistory = response || [];
+  // Filter for downloaded items only (no URL - local downloads)
+  const downloads = allHistory.filter(item => item.type === 'downloaded');
+  const downloadsList = document.getElementById('downloads-list');
+  const clearBtn = document.getElementById('clear-downloads');
+  
+  if (downloads.length === 0) {
+    downloadsList.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-icon">MP4</span>
+        <p>No downloads yet</p>
+        <p class="hint">Downloaded files appear here</p>
+      </div>
+    `;
+    clearBtn.style.display = 'none';
+    return;
+  }
+  
+  clearBtn.style.display = 'block';
+  
+  downloadsList.innerHTML = downloads.map((item, index) => {
+    const shortName = item.filename.length > 25 ? item.filename.slice(0, 22) + '...' : item.filename;
+    const isGif = item.filename.endsWith('.gif');
+    const isMp4 = item.filename.endsWith('.mp4');
+    const typeLabel = isGif ? 'GIF' : isMp4 ? 'MP4' : 'FILE';
+    
+    return `
+      <div class="download-item" data-index="${index}">
+        <div class="download-icon">${typeLabel}</div>
+        <div class="download-info">
+          <div class="download-name" title="${item.filename}">${shortName}</div>
+          <div class="download-meta">${formatSize(item.size)} · ${formatDate(item.date)}</div>
+        </div>
+        <a href="${item.tweetUrl}" target="_blank" class="download-tweet-btn" title="View tweet">↗</a>
+      </div>
+    `;
+  }).join('');
+}
+
 async function loadSettings() {
   const response = await chrome.runtime.sendMessage({ type: 'GET_SETTINGS' });
   const settings = response || {};
@@ -214,6 +258,8 @@ async function loadSettings() {
   document.getElementById('showNotifications').checked = settings.showNotifications !== false;
   document.getElementById('autoDownload').checked = settings.autoDownload !== false;
   document.getElementById('autoPlayGifs').checked = settings.autoPlayGifs === true;
+  document.getElementById('autoUploadOnDownload').checked = settings.autoUploadOnDownload === true;
+  document.getElementById('includeMp4').checked = settings.includeMp4 === true;
 }
 
 function initEventListeners() {
@@ -231,7 +277,9 @@ function initEventListeners() {
       fps: parseInt(document.getElementById('fps').value),
       showNotifications: document.getElementById('showNotifications').checked,
       autoDownload: document.getElementById('autoDownload').checked,
-      autoPlayGifs: document.getElementById('autoPlayGifs').checked
+      autoPlayGifs: document.getElementById('autoPlayGifs').checked,
+      autoUploadOnDownload: document.getElementById('autoUploadOnDownload').checked,
+      includeMp4: document.getElementById('includeMp4').checked
     };
     
     await chrome.runtime.sendMessage({ type: 'SAVE_SETTINGS', data: settings });
@@ -247,11 +295,19 @@ function initEventListeners() {
     }, 1500);
   });
   
-  // Clear history
+  // Clear history (only clears copied items)
   document.getElementById('clear-history').addEventListener('click', async () => {
-    if (confirm('Clear all download history?')) {
-      await chrome.runtime.sendMessage({ type: 'CLEAR_HISTORY' });
+    if (confirm('Clear all copied links?')) {
+      await chrome.runtime.sendMessage({ type: 'CLEAR_HISTORY_TYPE', historyType: 'copied' });
       loadHistory();
+    }
+  });
+  
+  // Clear downloads (only clears downloaded items)
+  document.getElementById('clear-downloads').addEventListener('click', async () => {
+    if (confirm('Clear all downloads?')) {
+      await chrome.runtime.sendMessage({ type: 'CLEAR_HISTORY_TYPE', historyType: 'downloaded' });
+      loadDownloads();
     }
   });
   

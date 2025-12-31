@@ -20,6 +20,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === 'DOWNLOAD_MP4') {
     handleDownloadMp4(message.data);
     sendResponse({ status: 'queued' });
+  } else if (message.type === 'COPY_MP4') {
+    handleCopyMp4(message.data);
+    sendResponse({ status: 'ok' });
   } else if (message.type === 'GIF_PROGRESS') {
     // Forward progress from offscreen to content script
     const tabId = activeConversions.get(message.tweetId);
@@ -36,6 +39,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   } else if (message.type === 'CLEAR_HISTORY') {
     clearHistory().then(sendResponse);
+    return true;
+  } else if (message.type === 'CLEAR_HISTORY_TYPE') {
+    clearHistoryByType(message.historyType).then(sendResponse);
     return true;
   } else if (message.type === 'DELETE_HISTORY_ITEM') {
     deleteHistoryItem(message.index).then(sendResponse);
@@ -63,15 +69,37 @@ async function handleDownloadMp4(data) {
     saveAs: false
   });
   
-  // Save to history
-  await addToHistory({
-    tweetId,
-    tweetUrl: tweetUrl || `https://x.com/i/status/${tweetId}`,
-    filename,
-    size: 0, // Unknown size for direct download
-    date: Date.now(),
-    type: 'downloaded'
-  });
+  // Check if MP4 tracking is enabled
+  const settings = await getSettings();
+  if (settings.includeMp4) {
+    await addToHistory({
+      tweetId,
+      tweetUrl: tweetUrl || `https://x.com/i/status/${tweetId}`,
+      filename,
+      size: 0, // Unknown size for direct download
+      date: Date.now(),
+      type: 'downloaded'
+    });
+  }
+}
+
+// Handle MP4 link copy (for history tracking)
+async function handleCopyMp4(data) {
+  const { videoUrl, tweetId, tweetUrl } = data;
+  
+  // Check if MP4 tracking is enabled
+  const settings = await getSettings();
+  if (settings.includeMp4) {
+    await addToHistory({
+      tweetId,
+      tweetUrl: tweetUrl || `https://x.com/i/status/${tweetId}`,
+      filename: `twitter-${tweetId}.mp4`,
+      url: videoUrl,
+      size: 0,
+      date: Date.now(),
+      type: 'copied'
+    });
+  }
 }
 
 // Handle conversion request
@@ -130,6 +158,45 @@ async function handleConversion(data, tabId) {
       date: Date.now(),
       type: 'downloaded'
     });
+    
+    // Auto-upload if enabled
+    if (settings.autoUploadOnDownload) {
+      try {
+        chrome.tabs.sendMessage(tabId, {
+          type: 'CONVERSION_STATUS',
+          tweetId,
+          status: 'uploading'
+        });
+        
+        const gifBlob = base64ToBlob(gifBase64, 'image/gif');
+        const formData = new FormData();
+        formData.append('fileToUpload', gifBlob, `${tweetId}.gif`);
+        formData.append('name', `twitter-gif-${tweetId}`);
+        
+        const uploadResponse = await fetch('https://hiii.boo/gif/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const uploadResult = await uploadResponse.json();
+        
+        if (!uploadResult.error && uploadResult.url) {
+          // Add to history as copied (with URL)
+          await addToHistory({
+            tweetId,
+            tweetUrl,
+            filename,
+            size: estimatedSize,
+            date: Date.now(),
+            type: 'copied',
+            url: uploadResult.url
+          });
+        }
+      } catch (uploadErr) {
+        // Silent fail for auto-upload, download still succeeded
+        console.warn('Auto-upload failed:', uploadErr);
+      }
+    }
     
     // Update badge
     chrome.action.setBadgeText({ text: '' });
@@ -352,6 +419,13 @@ async function clearHistory() {
   return { success: true };
 }
 
+async function clearHistoryByType(type) {
+  const history = await getHistory();
+  const filtered = history.filter(item => item.type !== type);
+  await chrome.storage.local.set({ history: filtered });
+  return { success: true };
+}
+
 async function deleteHistoryItem(index) {
   const history = await getHistory();
   if (index >= 0 && index < history.length) {
@@ -377,7 +451,9 @@ async function getSettings() {
     maxWidth: 480,
     fps: 15,
     showNotifications: true,
-    autoDownload: true
+    autoDownload: true,
+    autoUploadOnDownload: false,
+    includeMp4: false
   };
 }
 

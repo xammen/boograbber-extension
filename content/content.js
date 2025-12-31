@@ -4,16 +4,20 @@
   'use strict';
   
   const BUTTON_CLASS = 'gif-grabber-btn';
+  const MP4_BUTTON_CLASS = 'mp4-grabber-btn';
   const PROCESSED_ATTR = 'data-gif-grabber';
+  const MP4_PROCESSED_ATTR = 'data-mp4-grabber';
   
   // Store menu controllers by tweetId
   const menuControllers = new Map();
+  const mp4MenuControllers = new Map();
   
   // Observe DOM changes
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.addedNodes.length) {
         injectButtons();
+        injectMp4Buttons();
       }
     }
   });
@@ -21,12 +25,20 @@
   observer.observe(document.body, { childList: true, subtree: true });
   
   // Initial injection
-  setTimeout(injectButtons, 1000);
+  setTimeout(() => {
+    injectButtons();
+    injectMp4Buttons();
+  }, 1000);
   
   // Close menus when clicking outside
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.gif-grabber-container')) {
       document.querySelectorAll('.gif-grabber-menu.visible').forEach(menu => {
+        menu.classList.remove('visible');
+      });
+    }
+    if (!e.target.closest('.mp4-grabber-container')) {
+      document.querySelectorAll('.mp4-grabber-menu.visible').forEach(menu => {
         menu.classList.remove('visible');
       });
     }
@@ -385,6 +397,11 @@
         });
         // Status updates will come via message listener
       } else if (action === 'copy-mp4') {
+        // Track MP4 copy in history (if setting enabled)
+        chrome.runtime.sendMessage({
+          type: 'COPY_MP4',
+          data: { videoUrl: finalUrl, tweetId, tweetUrl }
+        });
         // Show link with copy button
         renderCopyLink(finalUrl);
       } else if (action === 'copy-gif') {
@@ -394,6 +411,207 @@
           data: { tweetUrl, videoUrl: finalUrl, tweetId }
         });
         // Status updates will come via message listener
+      }
+    });
+    
+    container.appendChild(button);
+    container.appendChild(menu);
+    return container;
+  }
+  
+  function injectMp4Buttons() {
+    // Broader selectors to catch all videos
+    const selectors = [
+      'video[poster*="tweet_video_thumb"]',
+      'video[poster*="ext_tw_video_thumb"]',
+      'video[poster*="amplify_video_thumb"]',
+      '[data-testid="card.wrapper"] video',
+      '[data-testid="videoPlayer"] video',
+      '[data-testid="videoComponent"] video',
+      'article video'
+    ];
+    
+    const videos = document.querySelectorAll(selectors.join(','));
+    
+    videos.forEach((video) => {
+      const article = video.closest('article');
+      if (!article || article.hasAttribute(MP4_PROCESSED_ATTR)) return;
+      
+      // Detect if it's a GIF (not a real video)
+      // GIFs on Twitter: loop=true, no audio, autoplay, poster contains "tweet_video_thumb"
+      const isGif = video.loop === true || 
+                    (video.poster && video.poster.includes('tweet_video_thumb') && !video.poster.includes('ext_tw_video'));
+      
+      if (isGif) {
+        // Skip GIFs - only show MP4 button on real videos
+        article.setAttribute(MP4_PROCESSED_ATTR, 'true');
+        return;
+      }
+      
+      const actionBar = article.querySelector('[role="group"]');
+      if (!actionBar) return;
+      
+      // Find tweet link
+      const allStatusLinks = article.querySelectorAll('a[href*="/status/"]');
+      const tweetLink = Array.from(allStatusLinks).find(a => {
+        const href = a.href;
+        return (href.includes('twitter.com/') || href.includes('x.com/')) && href.includes('/status/');
+      });
+      if (!tweetLink) return;
+      
+      const tweetId = tweetLink.href.match(/status\/(\d+)/)?.[1];
+      if (!tweetId) return;
+      
+      const tweetUrl = `https://x.com/i/status/${tweetId}`;
+      const source = video.querySelector('source');
+      const videoUrl = source?.src || video.src;
+      
+      article.setAttribute(MP4_PROCESSED_ATTR, 'true');
+      
+      const mp4Container = createMp4Interface(tweetId, tweetUrl, videoUrl);
+      actionBar.appendChild(mp4Container);
+    });
+  }
+  
+  function createMp4Interface(tweetId, tweetUrl, videoUrl) {
+    const container = document.createElement('div');
+    container.className = 'mp4-grabber-container';
+    
+    // Button
+    const button = document.createElement('button');
+    button.className = MP4_BUTTON_CLASS;
+    button.innerHTML = `<span class="mp4-text">MP4</span>`;
+    button.title = 'MP4 Options';
+    
+    // Menu
+    const menu = document.createElement('div');
+    menu.className = 'mp4-grabber-menu';
+    
+    function renderMainMenu() {
+      menu.innerHTML = `
+        <div class="mp4-grabber-item" data-action="download">download mp4</div>
+        <div class="mp4-grabber-item" data-action="copy">copy mp4 link</div>
+      `;
+    }
+    
+    function renderLoading(label = 'loading...') {
+      menu.innerHTML = `
+        <div class="mp4-grabber-loading">
+          <span class="mp4-grabber-spinner"></span>
+          <span>${label}</span>
+        </div>
+      `;
+    }
+    
+    function renderCopyLink(url) {
+      const truncated = url.length > 30 ? url.slice(0, 27) + '...' : url;
+      menu.innerHTML = `
+        <div class="mp4-grabber-copy-link">
+          <span class="mp4-grabber-link-text">${truncated}</span>
+          <button class="mp4-grabber-copy-btn" title="Copy">⎘</button>
+        </div>
+      `;
+      
+      const copyArea = menu.querySelector('.mp4-grabber-copy-link');
+      copyArea.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+          renderSuccess('Copied!');
+        } catch {
+          // Fallback
+          menu.innerHTML = `
+            <div class="mp4-grabber-copy-fallback">
+              <input class="mp4-grabber-link-input" value="${url}" readonly />
+            </div>
+          `;
+          const input = menu.querySelector('.mp4-grabber-link-input');
+          input.focus();
+          input.select();
+        }
+      };
+    }
+    
+    function renderSuccess(message) {
+      menu.innerHTML = `
+        <div class="mp4-grabber-success">
+          <span class="mp4-grabber-check">✓</span>
+          <span>${message}</span>
+        </div>
+      `;
+      setTimeout(() => {
+        menu.classList.remove('visible');
+        renderMainMenu();
+      }, 1500);
+    }
+    
+    function renderError(message) {
+      menu.innerHTML = `
+        <div class="mp4-grabber-error">
+          <span class="mp4-grabber-x">✗</span>
+          <span>${message || 'Error'}</span>
+        </div>
+      `;
+      setTimeout(() => {
+        menu.classList.remove('visible');
+        renderMainMenu();
+      }, 1500);
+    }
+    
+    renderMainMenu();
+    
+    // Store controller
+    mp4MenuControllers.set(`mp4-${tweetId}`, {
+      renderSuccess,
+      renderError,
+      renderLoading,
+      renderCopyLink,
+      renderMainMenu
+    });
+    
+    // Events
+    button.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Close other menus
+      document.querySelectorAll('.mp4-grabber-menu.visible').forEach(m => {
+        if (m !== menu) m.classList.remove('visible');
+      });
+      document.querySelectorAll('.gif-grabber-menu.visible').forEach(m => {
+        m.classList.remove('visible');
+      });
+      
+      menu.classList.toggle('visible');
+    });
+    
+    menu.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      
+      const action = e.target.dataset.action;
+      if (!action) return;
+      
+      renderLoading();
+      
+      const finalUrl = await resolveVideoUrl(tweetId, videoUrl);
+      
+      if (!finalUrl) {
+        renderError('Failed to get URL');
+        return;
+      }
+      
+      if (action === 'download') {
+        chrome.runtime.sendMessage({
+          type: 'DOWNLOAD_MP4',
+          data: { videoUrl: finalUrl, tweetId, tweetUrl }
+        });
+        renderSuccess('Downloading...');
+      } else if (action === 'copy') {
+        // Track MP4 copy in history (if setting enabled)
+        chrome.runtime.sendMessage({
+          type: 'COPY_MP4',
+          data: { videoUrl: finalUrl, tweetId, tweetUrl }
+        });
+        renderCopyLink(finalUrl);
       }
     });
     
