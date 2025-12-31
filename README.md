@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="#">
-    <img src="https://img.shields.io/badge/version-1.6.0-ghost?labelColor=0a0a0a&color=4a9&style=for-the-badge" alt="Version"/>
+    <img src="https://img.shields.io/badge/version-1.7.0-ghost?labelColor=0a0a0a&color=4a9&style=for-the-badge" alt="Version"/>
   </a>
   <a href="https://github.com/xammen/gif">
     <img src="https://img.shields.io/badge/website-hiii.boo/gif-ghost?labelColor=0a0a0a&color=888&style=for-the-badge" alt="Website"/>
@@ -25,7 +25,7 @@
 </p>
 
 <p align="center">
-  <i>chrome extension to download twitter/x gifs with one click</i>
+  <i>chrome extension to download twitter/x gifs & videos with one click</i>
   <br/>
   <i>because right-click > save doesn't work on "gifs" that are actually mp4s</i>
 </p>
@@ -34,7 +34,7 @@
 
 ## ✨ what does it do?
 
-adds a `gif` button to every tweet containing a video/gif.
+adds a `GIF` button to every tweet with a gif, and a `MP4` button to tweets with videos.
 
 ```
   ╭──────────────────────────────────────────╮
@@ -47,7 +47,21 @@ adds a `gif` button to every tweet containing a video/gif.
   │   │                                │     │
   │   └────────────────────────────────┘     │
   │                                          │
-  │   💬  🔁  ❤️  📊  [gif] ← click this     │
+  │   💬  🔁  ❤️  📊  [GIF] ← for gifs       │
+  │                                          │
+  ╰──────────────────────────────────────────╯
+
+  ╭──────────────────────────────────────────╮
+  │                                          │
+  │   some tweet with a video                │
+  │                                          │
+  │   ┌────────────────────────────────┐     │
+  │   │                                │     │
+  │   │      [video with controls]     │     │
+  │   │                                │     │
+  │   └────────────────────────────────┘     │
+  │                                          │
+  │   💬  🔁  ❤️  📊  [GIF] [MP4] ← both     │
   │                                          │
   ╰──────────────────────────────────────────╯
 ```
@@ -59,12 +73,47 @@ adds a `gif` button to every tweet containing a video/gif.
 | feature | |
 |---------|---|
 | one-click gif download | ✓ |
+| **one-click mp4 download** | ✓ **NEW** |
 | copy mp4 link | ✓ |
-| copy gif link (auto-uploads to imgbb) | ✓ |
+| copy gif link (auto-uploads) | ✓ |
+| **separate history & downloads tabs** | ✓ **NEW** |
+| **auto-upload on download** | ✓ **NEW** |
 | works on twitter.com & x.com | ✓ |
 | configurable quality/fps/size | ✓ |
-| download history | ✓ |
 | dark minimal ui | ✓ |
+
+---
+
+## 🆕 what's new in v1.7
+
+### MP4 button for videos
+
+real videos (with audio/controls) now get a dedicated `MP4` button for quick download or link copy.
+
+```
+  ╭─────────────────╮
+  │  download mp4   │  ← saves .mp4 directly
+  ├─────────────────┤
+  │  copy mp4 link  │  ← copies direct url
+  ╰─────────────────╯
+```
+
+### separate history & downloads
+
+- **history tab**: copied links with preview (shareable urls)
+- **downloads tab**: local downloads (gif & mp4 files)
+
+```
+  ┌──────────────────────────────────────┐
+  │  [History]  [Downloads]  [Settings]  │
+  └──────────────────────────────────────┘
+```
+
+### auto-upload on download
+
+enable in settings to automatically upload gifs when downloading, so you get both:
+- the file saved locally
+- a shareable link in your history
 
 ---
 
@@ -112,11 +161,14 @@ adds a `gif` button to every tweet containing a video/gif.
 
 click the extension icon to configure:
 
-| setting | default | range |
-|---------|---------|-------|
+| setting | default | description |
+|---------|---------|-------------|
 | quality | 10 | 1-20 (higher = better) |
-| max width | 480px | 100-1000 |
-| fps | 10 | 5-30 |
+| max width | 480px | 320-640 or original |
+| fps | 15 | 10-20 frames per second |
+| auto-download | on | skip save dialog |
+| auto-upload on download | off | get shareable link when downloading |
+| auto-play gifs | off | animate previews in history |
 
 ---
 
