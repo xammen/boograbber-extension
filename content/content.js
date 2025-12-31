@@ -91,6 +91,17 @@
       const article = video.closest('article');
       if (!article || article.hasAttribute(PROCESSED_ATTR)) return;
       
+      // Only show GIF button on GIFs (not real videos)
+      // GIFs: loop=true, or poster contains "tweet_video_thumb" without "ext_tw_video"
+      const isGif = video.loop === true || 
+                    (video.poster && video.poster.includes('tweet_video_thumb') && !video.poster.includes('ext_tw_video'));
+      
+      if (!isGif) {
+        // It's a real video - skip, MP4 button will handle it
+        article.setAttribute(PROCESSED_ATTR, 'true');
+        return;
+      }
+      
       const actionBar = article.querySelector('[role="group"]');
       if (!actionBar) return;
       

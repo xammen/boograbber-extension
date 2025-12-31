@@ -34,35 +34,23 @@
 
 ## ✨ what does it do?
 
-adds a `GIF` button to every tweet with a gif, and a `MP4` button to tweets with videos.
+adds a `GIF` button to gifs, and a `MP4` button to videos.
 
 ```
   ╭──────────────────────────────────────────╮
-  │                                          │
-  │   some tweet with a funny gif            │
-  │                                          │
+  │   tweet with a gif                       │
   │   ┌────────────────────────────────┐     │
-  │   │                                │     │
-  │   │         [video/gif]            │     │
-  │   │                                │     │
+  │   │         [looping gif]          │     │
   │   └────────────────────────────────┘     │
-  │                                          │
-  │   💬  🔁  ❤️  📊  [GIF] ← for gifs       │
-  │                                          │
+  │   💬  🔁  ❤️  📊  [GIF]                  │
   ╰──────────────────────────────────────────╯
 
   ╭──────────────────────────────────────────╮
-  │                                          │
-  │   some tweet with a video                │
-  │                                          │
+  │   tweet with a video                     │
   │   ┌────────────────────────────────┐     │
-  │   │                                │     │
-  │   │      [video with controls]     │     │
-  │   │                                │     │
+  │   │    [video with ▶ controls]     │     │
   │   └────────────────────────────────┘     │
-  │                                          │
-  │   💬  🔁  ❤️  📊  [GIF] [MP4] ← both     │
-  │                                          │
+  │   💬  🔁  ❤️  📊  [MP4]                  │
   ╰──────────────────────────────────────────╯
 ```
 
