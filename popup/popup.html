@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BooGrabber</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>BooGrabber</h1>
+      <p class="subtitle">༼ つ ╹ ╹ ༽つ</p>
+    </header>
+    
+    <nav class="tabs">
+      <button class="tab active" data-tab="history">History</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+    
+    <main>
+      <!-- History Tab -->
+      <section id="history" class="tab-content active">
+        <div id="pinned-toggle" class="pinned-toggle" style="display: none;">
+          <button id="toggle-pinned" class="toggle-pinned-btn">
+            <img src="../icons/pin.svg" alt="pin" class="pin-icon" />
+            <span id="pinned-count">0</span> pinned
+            <span id="toggle-arrow">▼</span>
+          </button>
+        </div>
+        <div id="history-list" class="history-list">
+          <div class="empty-state">
+            <span class="empty-icon">GIF</span>
+            <p>No downloads yet</p>
+            <p class="hint">Click the GIF button on any tweet to start</p>
+          </div>
+        </div>
+        <button id="clear-history" class="btn-secondary" style="display: none;">
+          Clear History
+        </button>
+      </section>
+      
+      <!-- Settings Tab -->
+      <section id="settings" class="tab-content">
+        <div class="setting-group">
+          <label>
+            <span class="setting-label">Quality</span>
+            <span class="setting-hint">Lower = smaller file, worse quality</span>
+          </label>
+          <input type="range" id="quality" min="1" max="20" value="10">
+          <span class="setting-value" id="quality-value">10</span>
+        </div>
+        
+        <div class="setting-group">
+          <label>
+            <span class="setting-label">Max Width</span>
+            <span class="setting-hint">Larger = bigger file</span>
+          </label>
+          <select id="maxWidth">
+            <option value="320">320px (Small)</option>
+            <option value="480" selected>480px (Medium)</option>
+            <option value="640">640px (Large)</option>
+            <option value="0">Original</option>
+          </select>
+        </div>
+        
+        <div class="setting-group">
+          <label>
+            <span class="setting-label">FPS</span>
+            <span class="setting-hint">Frames per second for long videos</span>
+          </label>
+          <select id="fps">
+            <option value="10">10 fps (Smaller)</option>
+            <option value="15" selected>15 fps (Balanced)</option>
+            <option value="20">20 fps (Smoother)</option>
+          </select>
+        </div>
+        
+        <div class="setting-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="showNotifications" checked>
+            <span class="setting-label">Show notifications</span>
+          </label>
+        </div>
+        
+        <div class="setting-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoDownload" checked>
+            <span class="setting-label">Auto-download (no prompt)</span>
+          </label>
+        </div>
+        
+        <div class="setting-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="autoPlayGifs">
+            <span class="setting-label">Auto-play GIFs in history</span>
+          </label>
+          <span class="setting-hint">(may consume RAM ༼ つ ╹ ╹ ༽つ)</span>
+        </div>
+        
+        <button id="save-settings" class="btn-primary">Save Settings</button>
+      </section>
+    </main>
+    
+    <footer>
+      <a href="https://github.com/xammen/gif" target="_blank">GitHub</a>
+      <span>v1.6.0</span>
+    </footer>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
